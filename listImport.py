@@ -12,19 +12,26 @@ TODO: Sugguest which comp you should go based on the least amount of units
 
 
 """
-
 import pandas, os
 os.chdir("C:\\Users\\Nathan\\Downloads")
 
-df = pandas.read_csv("AutoChess_units.csv", index_col=0)
-unit_index = df.index
-unit_columns = df.columns
-unit_dict = {}
 
-for unit in unit_index:
-    spec1 = df.loc[unit, "Spec"]
-    spec2 = df.loc[unit, 'Unnamed: 2']
-    synergy = df.loc[unit, 'Class']
-    unit_dict[unit] = [[spec1, spec2], synergy]
+def create_database():
+    return pandas.read_csv("AutoChess_units.csv", index_col=0)
 
+
+def create_unit_list():
+    create_unit_dict = {}
+    unit_index = df.index
+    for unit in unit_index:
+        spec1 = df.loc[unit, "Spec"]
+        spec2 = df.loc[unit, 'Unnamed: 2']
+        synergy = df.loc[unit, 'Class']
+        create_unit_dict[unit] = [[spec1, spec2], synergy]
+    return create_unit_dict
+
+
+df = create_database()
+unit_dict = create_unit_list()
 print(unit_dict)
+
