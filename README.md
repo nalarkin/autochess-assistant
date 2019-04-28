@@ -1,1 +1,1 @@
-# autochess-assistent
+# autochess-assistant
