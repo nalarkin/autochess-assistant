@@ -51,11 +51,9 @@ def create_composition_dict():
 
 
 def request_units():
-    # "user enters units separated by ,"
-    print("Which Comp will you play? ")
-    # add to a list
-    # return list of owned_units
-    pass
+    input_current_units = input("What units do you current have? (separate by "
+                           "comma) ").split(sep=',')
+    return input_current_units
 
 
 def suggest_comps():
@@ -69,7 +67,19 @@ def select_comps():
     # numbers 1, 2, 3, etc. which corresponds to index[] + 1
     # save the comp name they choose as a variable string object
     # return selected_comp
-    pass
+    remaining_comps = {}
+    print(current_units)
+    for unit in current_units:
+        print(complete_comp_dict.keys())
+        for comp in complete_comp_dict.keys():
+            search_units = [complete_comp_dict[comp]]
+            print(search_units)
+            if unit in search_units:
+                print("unit = " + unit + "||| comp  = " + comp)
+
+
+
+
 
 
 def initialize_comp():
@@ -92,9 +102,18 @@ def update_pieces():
     pass
 
 
+# def check_units(current_units):
+#     for unit in current_units:
+#         if unit in current_units:
+#             pass
+#         else:
+#             # PROMPT USER TO RETYPE UNIT
+
+
 df = create_database()
 compositions = import_compositions()
 complete_unit_dict = create_unit_dict()
 complete_comp_dict = create_composition_dict()
-print(complete_comp_dict)
-print(complete_unit_dict)
+current_units = request_units()
+# print(complete_comp_dict)
+select_comps()
