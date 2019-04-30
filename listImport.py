@@ -34,12 +34,12 @@ Workflow:
 
 
 def create_database():
-    os.chdir("C:\\Users\\Nathan\\Downloads")
+    #os.chdir("C:\\MyPythonScripts\\autochess-assistant\\autochess-assistant")
     return pandas.read_csv("AutoChess_units.csv", index_col=0)
 
 
 def import_compositions():
-    os.chdir("C:\\MyPythonScripts\\autochess-assistant\\autochess-assistant")
+    #os.chdir("C:\\MyPythonScripts\\autochess-assistant\\autochess-assistant")
     return pandas.read_csv("end_game_compositions.csv", index_col=0)
 
 
@@ -96,12 +96,16 @@ def select_comp():
     counter = 1
     for comp in remaining_comps:
         print("#" + str(counter) + ": " + comp)
+        print
         counter += 1
     response = int(input("Which comp would you like to play (enter number)? "))
-    final_comp = {}
+    final_comp = []
     final_comp_list = list(remaining_comps)
     selected_comp = final_comp_list[response - 1]
-    final_comp[selected_comp] = remaining_comps[selected_comp]
+    for units in remaining_comps[selected_comp]:
+        final_comp.append(units)
+    # final_comp[] = remaining_comps[selected_comp]
+
     return final_comp
 
 
@@ -110,13 +114,18 @@ def select_comp():
 # print selected comp units (full list)
 # return list
 def initialize_comp():
-    pass
+    print("Final Comp is: " + str(final_comp))
 
 
 # list of units in comp - owned_units = units_needed
 # return units_needed
 def retrieve_pieces():
-    pass
+    for unit in final_comp:
+        if current_units.__contains__(unit):
+            progress_list.append(final_comp.pop(final_comp.index(unit)))
+    print("Collected Units =  " + str(progress_list))
+    print("Units left  = " + str(final_comp))
+    return final_comp
 
 
 # ask user to type whenever they get a new unit that is part of the comp
@@ -141,4 +150,7 @@ current_units = request_units()
 # print(complete_comp_dict)
 remaining_comps = find_comps()
 final_comp = select_comp()
-print(final_comp)
+progress_list = []
+initialize_comp()
+retrieve_pieces()
+
