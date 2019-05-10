@@ -1,12 +1,10 @@
 """
-TODO: Have program order the comp choice by number of unit matches
-
-TODO: Tell the user what units they have left to complete comp, possibly use
-pop()
-
-TODO: fix internal style in select_comp()
-
-TODO: Handle mistyped unit names
+TODO:   Add more comps to use
+TODO:   Look into reducing the number of function arguments and global
+        constants in each function by using classes
+TODO:   Look at functions and refractor them to follow SOLID principles
+TODO:   Handle mistyped unit names
+TODO:   Ignore capitalization of inputted units
 
 """
 
@@ -32,7 +30,6 @@ Workflow:
 """
 
 
-
 def create_database():
     # os.chdir("C:\\MyPythonScripts\\autochess-assistant\\autochess-assistant")
     return pandas.read_csv("AutoChess_units.csv", index_col=0)
@@ -54,59 +51,75 @@ def create_unit_dict(unit_dataframe):
     return unit_dict
 
 
+# key, value where key is composition name, value is a set() of units in comp
 def create_composition_dict(compositions):
     comp_dict = {}
     comp_index = compositions.index
     for comp in comp_index:
         if comp != "S" and comp != "A":
-            comp_dict[comp] = compositions.loc[comp, "Unnamed: 1"].split(
-                sep=', ')
+            unit_list = compositions.loc[comp, "Unnamed: 1"].split(
+                    sep=', ')
+            comp_set = turn_list_into_set(unit_list)
+            comp_dict[comp] = comp_set
     return comp_dict
 
 
-def request_units(unit_list=None):
-    if unit_list:       # used to update a list of units that already exists
+def ask_user_for_units(previously_owned_units=None):
+    if previously_owned_units:
         print()
-        response = input("Add more units here, or type "
-                         "'s' to stop: "
-                         "").split(
-                sep=', ')
+        response = input("Add more units here, or type 's' to stop: -> "
+                         ).split(sep=', ')
+
         if response[0] == 's':
             return None
-        input_current_units = unit_list + response
+        new_units = turn_list_into_set(response)
+        previously_owned_units = previously_owned_units.union(new_units)
         print()
+        return previously_owned_units
     else:           # to create a new list
-        input_current_units = input("What units do you current have? (separate by "
-                           "comma) ").split(sep=', ')
-    return input_current_units
+        input_current_units = input("What units do you current have? (separate "
+                                    "by comma) ").split(sep=', ')
+        unit_set = turn_list_into_set(input_current_units)
+    return unit_set
 
 
-# traverse through complete_comp_dict, if any key matches a unit they
-# they have, add the comp name to a new list
-# return list called potential_comps
-def suggest_comps():
-    pass
+def turn_list_into_set(unit_list):
+    unit_set = set()
+    assert(unit_list), "supplied list is empty"
+    for element in unit_list:
+        unit_set.add(element)
+    return unit_set
 
 
 # find available comps the user can play with given pieces
-def find_comps(complete_comp_dict):
-    remaining_comps = []
+def find_total_unit_match_count(complete_comp_dict, current_units):
+    comps_with_unit_count = []
     for comp, comp_units in complete_comp_dict.items():
         matching_unit_counter = 0
         for owned_unit in current_units:
             if owned_unit in comp_units:
                 matching_unit_counter += 1
         if matching_unit_counter > 0:
-            remaining_comps.append((matching_unit_counter, comp))
-    remaining_comps.sort(reverse=True)
-    return remaining_comps
+            comps_with_unit_count.append((matching_unit_counter, comp))
+    # sort comps in descending order of unit matches
+    comps_with_unit_count.sort(reverse=True)
+    return comps_with_unit_count
 
 
 # prompt user to select comp they want to play (they can respond with
 # numbers 1, 2, 3, etc. which corresponds to index[] + 1
 # save the  name they choose as a variable string object
 # return final_comp
-def select_comp(remaining_comps):
+def user_selects_comp_to_play(remaining_comps):
+    response = print_comp_options(remaining_comps)
+    # remaining_comps[] returns tuple (units , comp name)
+    selected_comp = remaining_comps[response - 1]
+    selected_comp = selected_comp[1]
+    final_comp = complete_comp_dict[selected_comp]
+    return final_comp
+
+
+def print_comp_options(remaining_comps):
     counter = 1
     print()
     for comp in remaining_comps:
@@ -117,51 +130,28 @@ def select_comp(remaining_comps):
     print()
     response = int(input("Which comp would you like to play (enter number)? "))
     print()
-    selected_comp = remaining_comps[response - 1]       # returns tuple (
-                                                        # matching units , comp name)
-    selected_comp = selected_comp[1]        # selects the comp name out of tuple
-    final_comp = complete_comp_dict[selected_comp]
-    return final_comp
+    return response
 
 
 # use selected_comp to search complete_comp_dictionary's list of units
 # add all units to a list
 # print selected comp units (full list)
 # return list
-def initialize_comp():
+def print_final_comp():
     # print("Final Comp is: " + str(final_comp))
     print("final comp is = {}".format(final_comp))
     print()
 
-# list of units in comp - owned_units = units_needed
-# return units_needed
-def retrieve_pieces():
-    for unit in final_comp:
-        if current_units.__contains__(unit):
-            progress_list.append(final_comp.pop(final_comp.index(unit)))
-    print("Collected Units =  {}".format(str(progress_list)))
-    print("Units left  = {}".format(str(final_comp)))
-    return final_comp
 
-def keep_updating(current_units, final_comp):
+def keep_updating_current_units(units_owned, final_comp):
     response = ""
     # print("current units: {}".format(current_units))
-    while current_units:
-        actual_final_comp = []
-        for unit in final_comp:
-            if not current_units.__contains__(unit):
-                actual_final_comp.append(unit)
-        print("You need these units!{}".format(actual_final_comp))
-        print()
-        current_units = request_units(current_units)
-
-def check_units():
-    #     for unit in current_units:
-    #         if unit in current_units:
-    #             pass
-    #         else:
-    #             # PROMPT USER TO RETYPE UNIT
-    pass
+    while units_owned:
+        updated_units_need = final_comp.difference(units_owned)
+        print("=+=" * 35)
+        print("You need these units!{}".format(updated_units_need))
+        print("=+=" * 35)
+        units_owned = ask_user_for_units(units_owned)
 
 
 unit_dataframe = create_database()  # pandas imported csv file
@@ -170,11 +160,11 @@ complete_unit_dict = create_unit_dict(unit_dataframe)     # dictionary that cont
                                             # with synergys and class
 complete_comp_dict = create_composition_dict(compositions)  # dict (composition, units) with meta
                                                 #  unit compositions
-current_units = request_units()     # first time user is requested for units
-remaining_comps = find_comps(complete_comp_dict)      # find available comps
-final_comp = select_comp(remaining_comps)      # give user choice in selecting comp
+current_units = ask_user_for_units()     # first time user is requested for units
+comps_with_unit_count = find_total_unit_match_count(complete_comp_dict, current_units)      # find available comps
+final_comp = user_selects_comp_to_play(comps_with_unit_count)      # give user choice in selecting comp
 # progress_list = []
-initialize_comp()
-keep_updating(current_units, final_comp)        # process runs until user types 's'
+print_final_comp()
+keep_updating_current_units(current_units, final_comp)        # process runs until user types 's'
 # retrieve_pieces()
 
